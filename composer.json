@@ -1,0 +1,38 @@
+{
+    "name":         "huitiemesens/functional-test-generator",
+    "description":  "String transliterator",
+    "keywords":     ["functional-test-generator", "generator"],
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Charles-Antoine FOURNEL, Huitiemesens",
+            "homepage": "http://www.huitiemesens.fr/"
+        },
+        {
+            "name": "Community contributions",
+            "homepage": "https://github.com/liip/LiipFunctionalTestBundle/contributors"
+        }
+    ],
+
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/framework-bundle": "~2.3|~3.0",
+        "symfony/browser-kit": "~2.3|~3.0",
+        "symfony/validator": "~2.5|~3.0",
+        "doctrine/common": "~2.0",
+        "liip/functional-test-bundle": "^1.2",
+    },
+
+    "autoload": {
+        "psr-0": {
+            "huitiemesens\\functional-test-generator": "src/"
+        }
+    },
+
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1-dev"
+        }
+    }
+}
