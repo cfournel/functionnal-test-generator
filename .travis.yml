@@ -13,8 +13,9 @@ cache:
   directories:
 	- $HOME/.composer/cache
 
-install:
-  - composer install
+ before_script:
+  - npm install less
+  - composer install --dev --prefer-dist
 
 script: phpunit -v --coverage-clover=coverage.clover
 
