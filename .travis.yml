@@ -4,10 +4,8 @@ php:
     - 5.4
 
 before_script:
-  - composer self-update
-  - composer install --dev
-  - composer update
+  - /home/travis/.phpenv/versions/5.5/bin/composer self-update
+  - /home/travis/.phpenv/versions/5.5/bin/composer install --dev
 
 script:
-  - composer install --dev
   - phpunit -c app
