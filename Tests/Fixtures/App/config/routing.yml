@@ -1,0 +1,3 @@
+hutiemesens_default_index:
+    path:     /default
+    defaults: { _controller: huitiemesensFunctionalTestGeneratorBundle:Default:index }
