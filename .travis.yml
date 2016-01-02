@@ -1,13 +1,15 @@
-﻿language: php
+language: php
 
 sudo: required
 
 php:
     - 5.4
 
-before_script:
+before_install:
     - composer self-update
-    - composer install --dev
+
+install:
+    - composer install
 
 script:
     - phpunit -c app
