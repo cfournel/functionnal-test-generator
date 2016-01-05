@@ -2,6 +2,7 @@ Functional test Generator Bundle
 ================================
 
 [![Build Status](https://secure.travis-ci.org/huitiemesens/functionnal-test-generator.svg)](https://secure.travis-ci.org/#!/huitiemesens/functionnal-test-generator.svg)
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/d32c8d7f-2366-436c-91fe-9f14031154a5/mini.png)](https://insight.sensiolabs.com/projects/d32c8d7f-2366-436c-91fe-9f14031154a5)
 
 **Lead Developer** : [@huitiemesens](https://github.com/huitiemesens)
 
