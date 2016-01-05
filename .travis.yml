@@ -12,4 +12,4 @@ install:
     - composer install
 
 script:
-    - phpunit
+    - phpunit --coverage-text
