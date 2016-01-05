@@ -61,25 +61,8 @@ EOT
             $output->writeln( "Writing controller test");
             foreach ( $controllers as $name => $routes )
             {
-                $addTest = "<?php
-namespace ".$this->namespace."\\".$targetBundle."\\Tests\\Controller;
-
-use ".$this->namespace."\\".$targetBundle."\\Tests\\SetUpFunctionalTest;
-/**
- * Generated tests for $targetBundle
- */
-class " . $name ."Test extends SetUpFunctionalTest
-{
-
-    /**
-     * Set up test
-     */
-    public function setUp()
-    {
-        // setup sqlite database via fixtures
-        \$this->setUpClientAndUser();
-    }
-";              $questionHelper = $this->getHelper('question');
+                $addTest = $this->createControllerTestFile($targetBundle, $name);
+                $questionHelper = $this->getHelper('question');
 
                 if ($input->isInteractive()) {
                     $question = new ChoiceQuestion("<question>Do you confirm generation of {$name} controller ? [y] Yes [n] No <question>", array('y', 'n'));
@@ -125,6 +108,30 @@ class " . $name ."Test extends SetUpFunctionalTest
         }
     }
 
+    public function createControllerTestFile( $targetBundle, $name )
+    {
+        return "
+<?php
+namespace ".$this->namespace."\\".$targetBundle."\\Tests\\Controller;
+
+use ".$this->namespace."\\".$targetBundle."\\Tests\\SetUpFunctionalTest;
+/**
+ * Generated tests for $targetBundle
+ */
+class " . $name ."Test extends SetUpFunctionalTest
+{
+
+    /**
+     * Set up test
+     */
+    public function setUp()
+    {
+        // setup sqlite database via fixtures
+        \$this->setUpClientAndUser();
+    }
+";   
+    }
+
     public function addTestAction($actionName, $route)
     {
         return "
@@ -147,7 +154,77 @@ class " . $name ."Test extends SetUpFunctionalTest
     }
 
 ";
-                
+    }
+
+    public function addFixtures()
+    {
+        return "
+    /**
+     * Executes fixtures
+     * @param \Doctrine\Common\DataFixtures\Loader \$loader
+     */
+    protected function executeFixtures(Loader \$loader)
+    {
+        \$purger = new ORMPurger();
+        \$executor = new ORMExecutor(\$this->em, \$purger);
+        \$executor->execute(\$loader->getFixtures());
+    }
+";
+    }
+
+    public function loadFixtures()
+    {
+        return "
+    /**
+     * Load and execute fixtures from a directory
+     * @param string \$directory
+     */
+    protected function loadFixturesFromDirectory(\$directory)
+    {
+        \$loader = new Loader();
+        \$loader->loadFromDirectory(\$directory);
+        \$this->executeFixtures(\$loader);
+    }
+";
+    }
+
+    public function addEntityManager()
+    {
+        return "
+    /**
+     * Returns the doctrine orm entity manager
+     *
+     * @return object
+     */
+    protected function getEntityManager()
+    {
+        return \$this->container->get(\$this->entityManagerServiceId);
+    }
+";
+    }
+
+    public function addConstructor()
+    {
+        return "
+    /**
+     * Constructor
+     *
+     * @param string|null \$name     Test name
+     * @param array       \$data     Test data
+     * @param string      \$dataName Data name
+     */
+    public function __construct(\$name = null, array \$data = array(), \$dataName = '')
+    {
+        parent::__construct(\$name, \$data, \$dataName);
+        if (!static::\$kernel) {
+            static::\$kernel = self::createKernel(array('environment' => \$this->environment,'debug' => \$this->debug));
+            static::\$kernel->boot();
+        }
+
+        \$this->container = static::\$kernel->getContainer();
+        \$this->em = \$this->getEntityManager();
+    }
+";
     }
 
     public function generateSetupFunctionTest($targetBundle)
@@ -168,108 +245,31 @@ abstract class SetUpFunctionalTest extends WebTestCase
     protected \$client;
     protected \$uEmail;
     protected \$uPassword;
-    /**
-     * @var \Symfony\Component\DependencyInjection\Container
-     */
     protected \$container;
-    /**
-     * @var \Doctrine\ORM\EntityManager
-     */
     protected \$em;
-
-    /**
-     * @var string
-     */
     protected \$environment = 'test';
-
-    /**
-     * @var bool
-     */
     protected \$debug = true;
-
-    /**
-     * @var string
-     */
     protected \$entityManagerServiceId = 'doctrine.orm.entity_manager';
 
-    /**
-     * Constructor
-     *
-     * @param string|null \$name     Test name
-     * @param array       \$data     Test data
-     * @param string      \$dataName Data name
-     */
-    public function __construct(\$name = null, array \$data = array(), \$dataName = '')
-    {
-        parent::__construct(\$name, \$data, \$dataName);
-
-        if (!static::\$kernel) {
-            static::\$kernel = self::createKernel(array(
-                'environment' => \$this->environment,
-                'debug' => \$this->debug,
-            ));
-            static::\$kernel->boot();
-        }
-
-        \$this->container = static::\$kernel->getContainer();
-        \$this->em = \$this->getEntityManager();
-    }
-
-    /**
-     * Executes fixtures
-     *
-     * @param \Doctrine\Common\DataFixtures\Loader \$loader
-     */
-    protected function executeFixtures(Loader \$loader)
-    {
-        \$purger = new ORMPurger();
-        \$executor = new ORMExecutor(\$this->em, \$purger);
-        \$executor->execute(\$loader->getFixtures());
-    }
-
-    /**
-     * Load and execute fixtures from a directory
-     *
-     * @param string \$directory
-     */
-    protected function loadFixturesFromDirectory(\$directory)
-    {
-        \$loader = new Loader();
-        \$loader->loadFromDirectory(\$directory);
-        \$this->executeFixtures(\$loader);
-    }
-
-    /**
-     * Returns the doctrine orm entity manager
-     *
-     * @return object
-     */
-    protected function getEntityManager()
-    {
-        return \$this->container->get(\$this->entityManagerServiceId);
-    }
+" . $this->addConstructor() . "
+" . $this->addFixtures() . "
+" . $this->loadFixtures() . "
+" . $this->addEntityManager() . "
 
     /**
      * Sets up client and user for tests
      */
     public function setUpClientAndUser()
     {
-
         \$this->uPassword = \$this->container->getParameter('unit_test_password');
         \$this->uEmail = \$this->container->getParameter('unit_test_email');
 
         // creates client with already authenticated user
         \$this->client = static::makeClient(true);
-
         // Load all necessary fixtures (WIP)
-        \$this->loadFixtures(array(
-            
-        ));
-
+        \$this->loadFixtures(array());
     }
-
 }
-?>
 ";
     }
 }
