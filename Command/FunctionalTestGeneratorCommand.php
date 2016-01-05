@@ -5,7 +5,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class FunctionalTestGeneratorCommand extends ContainerAwareCommand
@@ -60,10 +59,9 @@ EOT
         if ( !empty( $controllers ) )
         {
             $output->writeln( "Writing controller test");
-         //   $text = "here is the list of controllers found:" ;
             foreach ( $controllers as $name => $routes )
             {
-                $ControllerTest = "<?php
+                $addTest = "<?php
 namespace ".$this->namespace."\\".$targetBundle."\\Tests\\Controller;
 
 use ".$this->namespace."\\".$targetBundle."\\Tests\\SetUpFunctionalTest;
@@ -96,14 +94,8 @@ class " . $name ."Test extends SetUpFunctionalTest
                         $ctrl = explode (":", str_ireplace( $match, "", $route->getDefault('_controller') ) );
                         $actionName = end( $ctrl );
                         $skip = 0;
-                        $output->writeln("\r\n<info>Generation test for route $actionName ...</info>");
-                        /*if (!$question->askConfirmation($output, '<question>Do you confirm generation? [Y] Yes [N] No <question>', true)) {
-                            $skip = 1;
-                        }*/
-                        
-                        if ( $skip ){
-                            $output->writeln("<error>Skipping $route ...</error>");
-                        }else
+                        $output->writeln("\r\n<info>Generation test for route $actionName ...</info>");                        
+                        if ( $skip == 0)
                         {
                             $dir =  dirname($this->getContainer()->getParameter('kernel.root_dir')).'/src/'.$this->namespace."/".$targetBundle;
                             if ( !is_dir ( $dir."/Tests" ) ){
@@ -117,7 +109,50 @@ class " . $name ."Test extends SetUpFunctionalTest
   
                             if ( !file_exists($dir."/Tests/SetUpFunctionalTest.php")){
                                 $output->writeln( "\r\n Generating SetUpFunctionalTest in {$targetBundle}.php ..." );
-                                $setUpFile = "<?php
+                                file_put_contents($dir."/Tests/SetUpFunctionalTest.php", $this->generateSetupFunctionTest($targetBundle));
+                            }
+
+                            $addTest .= $this->addTestAction($actionName, $route);
+                        }
+                    }
+
+                    $addTest .= "
+}
+";
+                file_put_contents($dir."/Tests/Controller/" . $name . "Test.php", $addTest);
+                }
+            }
+        }
+    }
+
+    public function addTestAction($actionName, $route)
+    {
+        return "
+    /**
+     * Tests the " . $actionName . " page
+     */
+    public function test" . $actionName ."()
+    {
+        //set up the test. Client is : \$this->client;
+        \$crawler = \$this->client->request('GET', '" . $route->getPath() . "');
+        \$response = \$this->client->getResponse();
+
+        // Test page is available (code 2**)
+        \$this->assertTrue(\$this->client->getResponse()->isSuccessful());
+
+        // Checks if right controller
+        \$this->assertEquals('overlord\AppBundle\Controller\CalendarController::indexAction',
+            \$this->client->getRequest()->attributes->get('_controller'));
+
+    }
+
+";
+                
+    }
+
+    public function generateSetupFunctionTest($targetBundle)
+    {
+        return "<?php
 namespace ".$this->namespace."\\".$targetBundle."\\Tests;
 use Doctrine\Common\DataFixtures\Executor\ORMExecutor;
 use Doctrine\Common\DataFixtures\Loader;
@@ -220,7 +255,6 @@ abstract class SetUpFunctionalTest extends WebTestCase
     public function setUpClientAndUser()
     {
 
-        // todo : à update avec les params unit test
         \$this->uPassword = \$this->container->getParameter('unit_test_password');
         \$this->uEmail = \$this->container->getParameter('unit_test_email');
 
@@ -237,50 +271,6 @@ abstract class SetUpFunctionalTest extends WebTestCase
 }
 ?>
 ";
-    
-                    file_put_contents($dir."/Tests/SetUpFunctionalTest.php", $setUpFile);
-                            }
-
-                        $ControllerTest .= "
-    /**
-     * Tests the " . $actionName . " page
-     */
-    public function test" . $actionName ."()
-    {
-        //set up the test. Client is : \$this->client;
-        \$crawler = \$this->client->request('GET', '" . $route->getPath() . "');
-        \$response = \$this->client->getResponse();
-
-        // Test page is available (code 2**)
-        //print_r(\$this->client->getResponse()->getContent());die;
-        \$this->assertTrue(\$this->client->getResponse()->isSuccessful());
-
-        // Checks if right controller
-        \$this->assertEquals('overlord\AppBundle\Controller\CalendarController::indexAction',
-            \$this->client->getRequest()->attributes->get('_controller'));
-
-        // Test generated content is available (at least one content)
-        // TODO : régler le pb de la fonction custom DQL rand() qui  n'est pas loadée
-        // (et donc pas de conseils)
-        //\$this->assertGreaterThan(0, \$crawler->filter('#conseils ul li p')->count());
-
-        // Test some static content
-        \$this->client->reload();
-
-        // Assert that the title is correct
-        \$html = \$crawler->filter('h1')->text();
-        \$this->assertNotEmpty(\$html);
-    }
-
-";
-                    }
-                }
-                $ControllerTest .= "
-}
-?>";
-                file_put_contents($dir."/Tests/Controller/" . $name . "Test.php", $ControllerTest);
-            }
-        }
     }
 }
-}
+
