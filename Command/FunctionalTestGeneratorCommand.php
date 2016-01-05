@@ -5,6 +5,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\DialogHelper;
 
 class FunctionalTestGeneratorCommand extends ContainerAwareCommand
 {
@@ -29,33 +30,28 @@ EOT
             )
         ;
     }
+
     
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ;
-    }
-    
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
+        $output->writeln( "DEBUG: start");
         $data = explode( ':' , $input->getArgument('bundle') );
         $this->namespace =   $data[0];
         $targetBundle = (!empty($data[1])) ? $data[1] : '';
-        $dialog = $this->getHelperSet()->get('dialog');
         if ( $targetBundle )
         {
             $output->writeln( "Every controllers included in $targetBundle will be generated");
-        } 
+        }
         
         $routes = $this->getContainer()->get('router')->getRouteCollection()->all();
         $match  = $this->namespace . "\\" . $targetBundle . "\\Controller\\";
-        
         foreach ( $routes as $route) {
+            $output->writeln( "DEBUG : TEST");
             $controller = $route->getDefault('_controller');
-            //$output->writeln( "DEBUG : getting routes for $targetBundle controller $controller ");
-            if (0 === strpos( $controller, $this->namespace . "\\" . $targetBundle)) {
+            $output->writeln( "DEBUG : getting routes for $targetBundle controller $controller ");
+            if (0 === strpos( $controller, $this->namespace . $targetBundle)) {
                 $controllerName = explode ("::", str_ireplace( $match, "", $controller ));
                 if ( !empty ( $controllerName ) ){
-                    //print_r ( $route );
                     $controllers[$controllerName[0]][] = $route;
                 }
             }
@@ -87,16 +83,18 @@ class " . $name ."Test extends SetUpFunctionalTest
         // setup sqlite database via fixtures
         \$this->setUpClientAndUser();
     }
-";                
+";              $dialog = new DialogHelper();
 
                 if ($input->isInteractive()) {
                     if (!$dialog->askConfirmation($output, "<question>Do you confirm generation of {$name} controller ? [Y] Yes [N] No <question>", true)) {
                         $output->writeln('<error>Command aborted</error>');
                         return 1;
                     }
-                    
+                    $output->writeln("test" );
                     foreach ( $routes as $route )
                     {
+                        $match  = $this->namespace . "\\" . $targetBundle . "\\Controller\\";
+                        $output->writeln("test" . $route->getDefault('_controller'));
                         $ctrl = explode ("::", str_ireplace( $match, "", $route->getDefault('_controller') ) );
                         if ( !empty ( $ctrl ) ){
                             $actionName = $ctrl[1];
