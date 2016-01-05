@@ -25,7 +25,7 @@
             <directory>./</directory>
             <exclude>
                 <directory>./Resources</directory>
-                <directory>./Tests</directory>
+                <directory>./Tests/Controller</directory>
                 <directory>./vendor</directory>
             </exclude>
         </whitelist>
