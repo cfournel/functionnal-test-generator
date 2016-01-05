@@ -23,14 +23,14 @@ class FunctionalTestGeneratorCommandTest extends WebTestCase
 
         $command = $application->find('tests:generate');
         $helper = $command->getHelper('question');
-        $helper->setInputStream($this->getInputStream('yes\\n'));
+        $helper->setInputStream($this->getInputStream("y\n"));
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
             'command'      => $command->getName(),
             'bundle'         => 'huitiemesens:FunctionalTestGeneratorBundle'
         ));
         
-        //echo $commandTester->getDisplay();
+        echo $commandTester->getDisplay();
         $this->assertRegExp('/./', $commandTester->getDisplay());
     }
 
