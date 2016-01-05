@@ -5,7 +5,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Helper\DialogHelper;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 class FunctionalTestGeneratorCommand extends ContainerAwareCommand
 {
@@ -83,12 +84,13 @@ class " . $name ."Test extends SetUpFunctionalTest
         // setup sqlite database via fixtures
         \$this->setUpClientAndUser();
     }
-";              $dialog = new DialogHelper();
+";              $questionHelper = new QuestionHelper();
 
                 if ($input->isInteractive()) {
-                    if (!$dialog->askConfirmation($output, "<question>Do you confirm generation of {$name} controller ? [Y] Yes [N] No <question>", true)) {
+                    $question = new ConfirmationQuestion("<question>Do you confirm generation of {$name} controller ? [Y] Yes [N] No <question>", false);
+                    if (!$questionHelper->ask($input, $output, $question ) ) {
                         $output->writeln('<error>Command aborted</error>');
-                        return 1;
+                        return ;
                     }
                     $output->writeln("test" );
                     foreach ( $routes as $route )
@@ -101,7 +103,7 @@ class " . $name ."Test extends SetUpFunctionalTest
                         }
                         $skip = 0;
                         $output->writeln("\r\n<info>Generation test for route $actionName ...</info>");
-                        /*if (!$dialog->askConfirmation($output, '<question>Do you confirm generation? [Y] Yes [N] No <question>', true)) {
+                        /*if (!$question->askConfirmation($output, '<question>Do you confirm generation? [Y] Yes [N] No <question>', true)) {
                             $skip = 1;
                         }*/
                         

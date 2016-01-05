@@ -2,10 +2,13 @@
 namespace huitiemesens\FunctionalTestGeneratorBundle\Tests\Command;
 
 
+use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use huitiemesens\FunctionalTestGeneratorBundle\Command\FunctionalTestGeneratorCommand;
+
 
 class FunctionalTestGeneratorCommandTest extends WebTestCase
 {
@@ -19,27 +22,24 @@ class FunctionalTestGeneratorCommandTest extends WebTestCase
         $application->add(new FunctionalTestGeneratorCommand());
 
         $command = $application->find('tests:generate');
-        //$this->mockCommandDialogHelper($command);
+        $helper = $command->getHelper('question');
+        $helper->setInputStream($this->getInputStream('yes\\n'));
         $commandTester = new CommandTester($command);
         $commandTester->execute(array(
             'command'      => $command->getName(),
             'bundle'         => 'huitiemesens:FunctionalTestGeneratorBundle'
         ));
         
-        echo $commandTester->getDisplay();
-        $this->assertRegExp('/.../', $commandTester->getDisplay());
+        //echo $commandTester->getDisplay();
+        $this->assertRegExp('/./', $commandTester->getDisplay());
     }
 
-    /**
-     * Mocking command input (not to show command prompt)
-     * @param Command $command
-     */
-    private function mockCommandDialogHelper(FunctionalTestGeneratorCommand $command)
+    protected function getInputStream($input)
     {
-        $dialog = $this->getMock('Symfony\Component\Console\Helper\DialogHelper', array('ask'));
-        $dialog->expects($this->at(0))
-            ->method('ask')
-            ->will($this->returnValue('y'));
-        $command->getHelperSet()->set($dialog, 'dialog');
+        $stream = fopen('php://memory', 'r+', false);
+        fputs($stream, $input);
+        rewind($stream);
+
+        return $stream;
     }
 }
