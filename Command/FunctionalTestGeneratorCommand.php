@@ -55,12 +55,13 @@ EOT
             
 
         }
-        
-        if ( !empty( $controllers ) )
-        {
+        $this->generate($targetBundle, $controllers, $input, $output);
+    }
+
+    public function generate( $targetBundle, $controllers, $input, $output ){
+        if ( !empty( $controllers ) ){
             $output->writeln( "Writing controller test");
-            foreach ( $controllers as $name => $routes )
-            {
+            foreach ( $controllers as $name => $routes ){
                 $addTest = $this->createControllerTestFile($targetBundle, $name);
                 $questionHelper = $this->getHelper('question');
 
@@ -71,40 +72,39 @@ EOT
                         $output->writeln('<error>Command aborted</error>');
                         return ;
                     }
-                    foreach ( $routes as $route )
-                    {
+                    foreach ( $routes as $route ){
                         $match  = $this->namespace . $targetBundle;
                         $ctrl = explode (":", str_ireplace( $match, "", $route->getDefault('_controller') ) );
                         $actionName = end( $ctrl );
                         $skip = 0;
                         $output->writeln("\r\n<info>Generation test for route $actionName ...</info>");                        
-                        if ( $skip == 0)
-                        {
+                        if ( $skip == 0){
                             $dir =  dirname($this->getContainer()->getParameter('kernel.root_dir')).'/src/'.$this->namespace."/".$targetBundle;
-                            if ( !is_dir ( $dir."/Tests" ) ){
-                                $output->writeln( "\r\n Generating directory..." );
-                                mkdir($dir."/Tests", 0755, true);
-                            }
-                            if ( !is_dir( $dir."/Tests/Controller")){
-                                $output->writeln( "\r\n Generating tests controller directory..." );
-                                mkdir($dir."/Tests/Controller", 0755, true);
-                            }
-  
-                            if ( !file_exists($dir."/Tests/SetUpFunctionalTest.php")){
+                            $this->generateDir($dir, $output);
+                              if ( !file_exists($dir."/Tests/SetUpFunctionalTest.php")){
                                 $output->writeln( "\r\n Generating SetUpFunctionalTest in {$targetBundle}.php ..." );
                                 file_put_contents($dir."/Tests/SetUpFunctionalTest.php", $this->generateSetupFunctionTest($targetBundle));
                             }
-
                             $addTest .= $this->addTestAction($actionName, $route);
                         }
                     }
-
                     $addTest .= "
-}
-";
+}";
                 file_put_contents($dir."/Tests/Controller/" . $name . "Test.php", $addTest);
                 }
             }
+        }
+    }
+
+    public function generateDir( $dir, $output )
+    {
+        if ( !is_dir ( $dir."/Tests" ) ){
+            $output->writeln( "\r\n Generating directory..." );
+            mkdir($dir."/Tests", 0755, true);
+        }
+        if ( !is_dir( $dir."/Tests/Controller")){
+            $output->writeln( "\r\n Generating tests controller directory..." );
+            mkdir($dir."/Tests/Controller", 0755, true);
         }
     }
 
