@@ -1,7 +1,7 @@
 {
     "name":         "huitiemesens/functional-test-generator",
-    "description":  "String transliterator",
-    "keywords":     ["functional-test-generator", "generator"],
+    "description":  "Generate skeleton functional test for symfony2 bundle",
+    "keywords":     ["phpunit", "generator", "functional test", "symfony2 bundle"],
     "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
