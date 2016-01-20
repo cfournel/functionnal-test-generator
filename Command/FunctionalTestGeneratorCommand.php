@@ -146,11 +146,6 @@ class " . $name ."Test extends SetUpFunctionalTest
 
         // Test page is available (code 2**)
         \$this->assertTrue(\$this->client->getResponse()->isSuccessful());
-
-        // Checks if right controller
-        \$this->assertEquals('overlord\AppBundle\Controller\CalendarController::indexAction',
-            \$this->client->getRequest()->attributes->get('_controller'));
-
     }
 
 ";
@@ -261,12 +256,12 @@ abstract class SetUpFunctionalTest extends WebTestCase
      */
     public function setUpClientAndUser()
     {
-        \$this->uPassword = \$this->container->getParameter('unit_test_password');
-        \$this->uEmail = \$this->container->getParameter('unit_test_email');
+        \$credentials = array(
+            'username' => \$this->container->getParameter('unit_test_password'),
+            'password' => \$this->container->getParameter('unit_test_email')
+        );
 
-        // creates client with already authenticated user
-        \$this->client = static::makeClient(true);
-        // Load all necessary fixtures (WIP)
+        $this->client = static::makeClient($credentials);
         \$this->loadFixtures(array());
     }
 }
