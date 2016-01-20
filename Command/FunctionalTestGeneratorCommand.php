@@ -261,7 +261,7 @@ abstract class SetUpFunctionalTest extends WebTestCase
             'password' => \$this->container->getParameter('unit_test_email')
         );
 
-        $this->client = static::makeClient($credentials);
+        \$this->client = static::makeClient(\$credentials);
         \$this->loadFixtures(array());
     }
 }
