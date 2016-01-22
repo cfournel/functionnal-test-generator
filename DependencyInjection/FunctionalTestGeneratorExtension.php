@@ -1,6 +1,6 @@
 <?php
 
-namespace hiutiemesens\FunctionalTestGeneratorBundle\DependencyInjection;
+namespace huitiemesens\FunctionalTestGeneratorBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
