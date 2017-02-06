@@ -27,7 +27,7 @@ Installation
 ---
 1) Download via composer the bundle
 
-       composer require huitiemesens/functionalTestGeneratorBundle
+       composer require huitiemesens/functional-test-generator
 2) Add the bundle to your AppKernel.php under your dev/test environnement
 
        new huitiemesens\FunctionalTestGeneratorBundle\FunctionalTestGeneratorBundle(),
